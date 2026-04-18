@@ -1,0 +1,7 @@
+services:
+  reel:
+    build: .
+    container_name: reel
+    ports:
+      - "8195:8195"
+    restart: unless-stopped

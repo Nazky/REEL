@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REEL</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        :root {
+            --bg: #09090b;
+            --surface: #131316;
+            --surface-2: #1a1a1f;
+            --surface-3: #222228;
+            --border: #26262e;
+            --border-focus: #14b8a6;
+            --text: #eeeef0;
+            --text-dim: #b0b0ba;
+            --text-muted: #7e7e8c;
+            --accent: #14b8a6;
+            --accent-hover: #0f9e8e;
+            --accent-dim: rgba(20,184,166,0.10);
+            --error: #f43f5e;
+            --success: #22c55e;
+            --warning: #f59e0b;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Space Grotesk', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background:
+                radial-gradient(ellipse 70% 40% at 50% -5%, rgba(20,184,166,0.07) 0%, transparent 100%),
+                radial-gradient(ellipse 50% 50% at 85% 105%, rgba(6,182,212,0.04) 0%, transparent 100%);
+        }
+
+        .app-wrap {
+            position: relative; z-index: 1;
+            max-width: 640px; margin: 0 auto;
+            padding: 48px 20px 100px;
+        }
+
+        .app-header { text-align: center; margin-bottom: 40px; }
+        .app-header h1 {
+            font-size: 2.6rem; font-weight: 700; letter-spacing: -0.04em;
+            background: linear-gradient(135deg, var(--text) 30%, var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .app-header p { color: var(--text-muted); font-size: 0.92rem; margin-top: 6px; }
+
+        .app-footer {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            z-index: 10; padding: 16px 20px;
+            display: flex; align-items: center; gap: 14px;
+            pointer-events: none;
+        }
+        .app-footer span { pointer-events: auto; }
+        .footer-ver { font-size: 0.76rem; color: var(--text-muted); opacity: 0.5; }
+        .footer-credit { font-size: 0.76rem; color: var(--text-muted); opacity: 0.5; }
+        .footer-credit a { color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+        .footer-credit a:hover { color: var(--accent); }
+
+        .tab-bar {
+            display: flex; position: relative;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px; padding: 4px;
+            margin-bottom: 28px;
+        }
+        .tab-btn {
+            flex: 1; position: relative; z-index: 2;
+            padding: 10px 0; text-align: center;
+            font-family: inherit; font-size: 0.88rem; font-weight: 600;
+            color: var(--text-muted); background: none; border: none;
+            cursor: pointer; border-radius: 9px;
+            transition: color 0.25s;
+        }
+        .tab-btn.active { color: var(--text); }
+        .tab-btn:hover:not(.active) { color: var(--text); }
+        .tab-indicator {
+            position: absolute; z-index: 1; top: 4px; bottom: 4px;
+            background: var(--surface-2);
+            border-radius: 9px;
+            transition: left 0.3s cubic-bezier(.4,0,.2,1), width 0.3s cubic-bezier(.4,0,.2,1);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+        }
+
+        .panel { display: none; animation: fadeIn 0.25s ease; }
+        .panel.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+        .input-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 0; }
+        .input-row input[type="url"] {
+            flex: 1 1 220px; min-width: 0;
+            padding: 12px 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px; color: var(--text);
+            font-family: inherit; font-size: 0.9rem;
+            outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .input-row input[type="url"]::placeholder { color: var(--text-muted); }
+        .input-row input[type="url"]:focus {
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px var(--accent-dim);
+        }
+
+        .fmt-mini {
+            display: flex; position: relative;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px; padding: 3px;
+            flex-shrink: 0;
+        }
+        .fmt-mini-btn {
+            padding: 9px 15px;
+            font-family: inherit; font-size: 0.8rem; font-weight: 600;
+            color: var(--text-muted); background: none; border: none;
+            cursor: pointer; border-radius: 8px;
+            position: relative; z-index: 2;
+            display: flex; align-items: center; gap: 5px;
+            transition: color 0.2s;
+            white-space: nowrap;
+        }
+        .fmt-mini-btn.active { color: var(--text); }
+        .fmt-mini-btn:hover:not(.active) { color: var(--text); }
+        .fmt-mini-ind {
+            position: absolute; z-index: 1; top: 3px; bottom: 3px;
+            background: var(--surface-2);
+            border-radius: 8px;
+            transition: left 0.25s cubic-bezier(.4,0,.2,1), width 0.25s cubic-bezier(.4,0,.2,1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .btn-sm {
+            padding: 12px 20px;
+            background: var(--surface-2); color: var(--text);
+            border: 1px solid var(--border); border-radius: 10px;
+            font-family: inherit; font-size: 0.88rem; font-weight: 600;
+            cursor: pointer; transition: background 0.2s, border-color 0.2s;
+            white-space: nowrap; flex-shrink: 0;
+        }
+        .btn-sm:hover { background: var(--border); }
+        .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .opts-row {
+            display: flex; align-items: center; gap: 10px;
+            margin-top: 10px; margin-bottom: 16px;
+            padding-left: 2px;
+        }
+        .opts-row label { font-size: 0.82rem; color: var(--text-muted); white-space: nowrap; }
+        .opts-row select {
+            padding: 8px 12px;
+            background: var(--surface); color: var(--text);
+            border: 1px solid var(--border); border-radius: 8px;
+            font-family: inherit; font-size: 0.84rem;
+            outline: none; cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .opts-row select:focus { border-color: var(--border-focus); }
+
+        .info-card {
+            display: flex; gap: 14px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px; padding: 14px;
+            margin-bottom: 16px;
+        }
+        .info-card img {
+            width: 140px; height: 80px; object-fit: cover;
+            border-radius: 8px; flex-shrink: 0;
+            background: var(--surface-2);
+        }
+        .info-card .info-body { min-width: 0; }
+        .info-card .info-title {
+            font-size: 0.92rem; font-weight: 600;
+            display: -webkit-box; -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical; overflow: hidden;
+            margin-bottom: 6px;
+        }
+        .info-card .info-meta {
+            font-size: 0.8rem; color: var(--text-muted);
+            display: flex; gap: 12px; flex-wrap: wrap;
+        }
+
+        .playlist-preview {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px; padding: 14px;
+            margin-bottom: 16px; max-height: 240px; overflow-y: auto;
+        }
+        .playlist-preview::-webkit-scrollbar { width: 4px; }
+        .playlist-preview::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        .pl-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 7px 0; border-bottom: 1px solid var(--border);
+            font-size: 0.82rem;
+        }
+        .pl-item:last-child { border-bottom: none; }
+        .pl-item-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 10px; }
+        .pl-item-dur { color: var(--text-muted); font-size: 0.78rem; flex-shrink: 0; }
+
+        .btn-primary {
+            width: 100%; padding: 13px 0;
+            background: var(--accent); color: #000;
+            border: none; border-radius: 10px;
+            font-family: inherit; font-size: 0.92rem; font-weight: 700;
+            cursor: pointer; transition: background 0.2s, transform 0.15s;
+            margin-bottom: 14px;
+        }
+        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-primary:active { transform: scale(0.985); }
+        .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+        .btn-primary.success { background: var(--success); }
+        .btn-primary.success:hover { background: #16a34a; }
+
+        .progress-section { margin-bottom: 14px; }
+        .progress-track {
+            width: 100%; height: 8px;
+            background: var(--surface);
+            border-radius: 99px; overflow: hidden;
+            margin-bottom: 8px;
+        }
+        .progress-fill {
+            height: 100%; width: 0%;
+            background: linear-gradient(90deg, var(--accent), #06b6d4);
+            border-radius: 99px;
+            transition: width 0.35s ease;
+        }
+        .progress-fill.indeterminate {
+            width: 30%;
+            background: var(--warning);
+            animation: indeterminate 1.5s infinite ease-in-out;
+        }
+        @keyframes indeterminate {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(400%); }
+        }
+        .progress-row { display: flex; justify-content: space-between; align-items: center; }
+        .progress-pct { font-size: 0.84rem; font-weight: 600; }
+        .progress-speed { font-size: 0.78rem; color: var(--text-muted); }
+        .progress-file {
+            font-size: 0.78rem; color: var(--text-muted);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            margin-top: 4px;
+        }
+
+        .setting-group {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px; padding: 18px;
+            margin-bottom: 14px;
+        }
+        .setting-group-title {
+            font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.08em; color: var(--text-muted);
+            margin-bottom: 14px;
+        }
+        .setting-row {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 12px; gap: 12px;
+        }
+        .setting-row:last-child { margin-bottom: 0; }
+        .setting-label { font-size: 0.88rem; white-space: nowrap; }
+        .setting-hint { font-size: 0.74rem; color: var(--text-muted); margin-top: 3px; }
+        .setting-row select, .setting-input {
+            padding: 8px 12px;
+            background: var(--surface-2); color: var(--text);
+            border: 1px solid var(--border); border-radius: 8px;
+            font-family: inherit; font-size: 0.84rem;
+            outline: none; cursor: pointer;
+            flex-shrink: 0;
+        }
+        .setting-input { width: 100%; cursor: text; }
+        .setting-input-mono {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.82rem; resize: vertical; min-height: 60px;
+        }
+        .setting-input-sm { width: 90px; text-align: center; }
+        .setting-row select:focus, .setting-input:focus { border-color: var(--border-focus); }
+
+        .toggle {
+            position: relative; width: 44px; height: 24px;
+            background: var(--border); border-radius: 99px;
+            cursor: pointer; transition: background 0.25s;
+            flex-shrink: 0;
+        }
+        .toggle.on { background: var(--accent); }
+        .toggle::after {
+            content: ''; position: absolute;
+            top: 3px; left: 3px;
+            width: 18px; height: 18px;
+            background: #fff; border-radius: 50%;
+            transition: transform 0.25s;
+        }
+        .toggle.on::after { transform: translateX(20px); }
+
+        .settings-actions { display: flex; gap: 10px; margin-top: 22px; }
+        .settings-actions .btn-primary { margin-bottom: 0; flex: 1; }
+        .btn-ghost {
+            flex: 1; padding: 13px 0;
+            background: transparent; color: var(--text-muted);
+            border: 1px solid var(--border); border-radius: 10px;
+            font-family: inherit; font-size: 0.92rem; font-weight: 600;
+            cursor: pointer; transition: color 0.2s, border-color 0.2s;
+        }
+        .btn-ghost:hover { color: var(--text); border-color: var(--text-muted); }
+
+        #toasts {
+            position: fixed; bottom: 24px; right: 24px;
+            z-index: 9999; display: flex; flex-direction: column-reverse; gap: 8px;
+        }
+        .toast {
+            padding: 12px 20px;
+            border-radius: 10px; font-size: 0.84rem; font-weight: 500;
+            color: #fff; opacity: 0; transform: translateY(8px);
+            transition: opacity 0.3s, transform 0.3s;
+            max-width: 340px; word-break: break-word;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+        .toast.show { opacity: 1; transform: none; }
+        .toast-error { background: var(--error); }
+        .toast-success { background: #16a34a; }
+        .toast-warning { background: #b45309; }
+        .toast-info { background: #2563eb; }
+
+        .hidden { display: none !important; }
+        .setting-divider { height: 1px; background: var(--border); margin: 14px 0; }
+
+        @media (max-width: 520px) {
+            .app-wrap { padding: 28px 14px 80px; }
+            .app-header h1 { font-size: 2rem; }
+            .input-row { gap: 6px; }
+            .input-row input[type="url"] { flex: 1 1 100%; }
+            .fmt-mini { flex: 1; }
+            .fmt-mini-btn { flex: 1; justify-content: center; padding: 9px 10px; }
+            .btn-sm { flex: 1; text-align: center; }
+            .info-card { flex-direction: column; }
+            .info-card img { width: 100%; height: 160px; }
+            #toasts { left: 14px; right: 14px; bottom: 60px; }
+            .toast { max-width: none; }
+            .setting-row { flex-direction: column; align-items: flex-start; gap: 6px; }
+            .setting-row select, .setting-input { width: 100%; }
+            .setting-input-sm { width: 100%; text-align: left; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="toasts"></div>
+
+<footer class="app-footer">
+    <span class="footer-ver">v0.1</span>
+    <span class="footer-credit">Made by <a href="https://github.com/Nazky" target="_blank" rel="noopener">Nazky</a></span>
+</footer>
+
+<div class="app-wrap">
+    <header class="app-header">
+        <h1>REEL</h1>
+        <p>Download videos and playlists from the web</p>
+    </header>
+
+    <nav class="tab-bar" id="tab-bar">
+        <button class="tab-btn active" data-tab="single">Single File</button>
+        <button class="tab-btn" data-tab="playlist">Playlist</button>
+        <button class="tab-btn" data-tab="settings">Settings</button>
+        <div class="tab-indicator" id="tab-indicator"></div>
+    </nav>
+
+    <!-- SINGLE FILE -->
+    <section class="panel active" id="panel-single">
+        <div class="input-row">
+            <input type="url" id="s-url" placeholder="Paste video URL here…" spellcheck="false">
+            <div class="fmt-mini" id="s-fmt-bar">
+                <button class="fmt-mini-btn active" data-format="video">
+                    <i data-lucide="video" style="width:14px;height:14px"></i> V+A
+                </button>
+                <button class="fmt-mini-btn" data-format="audio">
+                    <i data-lucide="music" style="width:14px;height:14px"></i> Audio
+                </button>
+                <div class="fmt-mini-ind" id="s-fmt-ind"></div>
+            </div>
+            <button class="btn-sm" id="s-fetch-btn" onclick="fetchSingleInfo()">Get Info</button>
+        </div>
+
+        <div class="opts-row" id="s-video-opts">
+            <label>Quality</label>
+            <select id="s-quality">
+                <option value="best">Best Available</option>
+                <option value="1080p">1080p</option>
+                <option value="720p">720p</option>
+                <option value="480p">480p</option>
+            </select>
+        </div>
+        <div class="opts-row hidden" id="s-audio-opts">
+            <label>Format</label>
+            <select id="s-audio-fmt">
+                <option value="mp3">MP3</option>
+                <option value="m4a">M4A</option>
+                <option value="opus">Opus</option>
+                <option value="flac">FLAC</option>
+                <option value="wav">WAV</option>
+            </select>
+        </div>
+
+        <div class="info-card hidden" id="s-info">
+            <img id="s-thumb" src="" alt="">
+            <div class="info-body">
+                <div class="info-title" id="s-title"></div>
+                <div class="info-meta">
+                    <span id="s-uploader"></span>
+                    <span id="s-duration"></span>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn-primary" id="s-dl-btn" onclick="startSingleDownload()">Download</button>
+
+        <div class="progress-section hidden" id="s-progress">
+            <div class="progress-track"><div class="progress-fill" id="s-fill"></div></div>
+            <div class="progress-row">
+                <span class="progress-pct" id="s-pct">0%</span>
+                <span class="progress-speed" id="s-speed"></span>
+            </div>
+            <div class="progress-file" id="s-file"></div>
+        </div>
+
+        <div class="hidden" id="s-complete">
+            <button class="btn-primary success" onclick="saveFile('s')">Save File</button>
+        </div>
+    </section>
+
+    <!-- PLAYLIST -->
+    <section class="panel" id="panel-playlist">
+        <div class="input-row">
+            <input type="url" id="p-url" placeholder="Paste playlist URL here…" spellcheck="false">
+            <div class="fmt-mini" id="p-fmt-bar">
+                <button class="fmt-mini-btn active" data-format="video">
+                    <i data-lucide="video" style="width:14px;height:14px"></i> V+A
+                </button>
+                <button class="fmt-mini-btn" data-format="audio">
+                    <i data-lucide="music" style="width:14px;height:14px"></i> Audio
+                </button>
+                <div class="fmt-mini-ind" id="p-fmt-ind"></div>
+            </div>
+            <button class="btn-sm" id="p-fetch-btn" onclick="fetchPlaylistInfo()">Get Info</button>
+        </div>
+
+        <div class="opts-row" id="p-video-opts">
+            <label>Quality</label>
+            <select id="p-quality">
+                <option value="best">Best Available</option>
+                <option value="1080p">1080p</option>
+                <option value="720p">720p</option>
+                <option value="480p">480p</option>
+            </select>
+        </div>
+        <div class="opts-row hidden" id="p-audio-opts">
+            <label>Format</label>
+            <select id="p-audio-fmt">
+                <option value="mp3">MP3</option>
+                <option value="m4a">M4A</option>
+                <option value="opus">Opus</option>
+                <option value="flac">FLAC</option>
+                <option value="wav">WAV</option>
+            </select>
+        </div>
+
+        <div class="info-card hidden" id="p-info">
+            <div class="info-body" style="width:100%">
+                <div class="info-title" id="p-title"></div>
+                <div class="info-meta">
+                    <span id="p-uploader"></span>
+                    <span id="p-count"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="playlist-preview hidden" id="p-entries"></div>
+
+        <button class="btn-primary" id="p-dl-btn" onclick="startPlaylistDownload()">Download All as ZIP</button>
+
+        <div class="progress-section hidden" id="p-progress">
+            <div class="progress-track"><div class="progress-fill" id="p-fill"></div></div>
+            <div class="progress-row">
+                <span class="progress-pct" id="p-pct">0%</span>
+                <span class="progress-speed" id="p-speed"></span>
+            </div>
+            <div class="progress-file" id="p-file"></div>
+        </div>
+
+        <div class="hidden" id="p-complete">
+            <button class="btn-primary success" onclick="saveFile('p')">Save ZIP</button>
+        </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="panel" id="panel-settings">
+
+        <div class="setting-group">
+            <div class="setting-group-title">Download Format</div>
+            <div class="setting-row">
+                <span class="setting-label">Default format</span>
+                <select id="set-format">
+                    <option value="video">Video + Audio</option>
+                    <option value="audio">Audio Only</option>
+                </select>
+            </div>
+            <div class="setting-row" id="set-video-opts">
+                <span class="setting-label">Video quality</span>
+                <select id="set-quality">
+                    <option value="best">Best Available</option>
+                    <option value="1080p">1080p</option>
+                    <option value="720p">720p</option>
+                    <option value="480p">480p</option>
+                </select>
+            </div>
+            <div class="setting-row hidden" id="set-audio-opts">
+                <span class="setting-label">Audio format</span>
+                <select id="set-audio-fmt">
+                    <option value="mp3">MP3</option>
+                    <option value="m4a">M4A</option>
+                    <option value="opus">Opus</option>
+                    <option value="flac">FLAC</option>
+                    <option value="wav">WAV</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="setting-group hidden" id="set-audio-advanced">
+            <div class="setting-group-title">Audio Options</div>
+            <div class="setting-row">
+                <div>
+                    <span class="setting-label">Bitrate</span>
+                    <div class="setting-hint">Higher = better quality, larger file</div>
+                </div>
+                <select id="set-bitrate">
+                    <option value="128">128 kbps</option>
+                    <option value="192">192 kbps</option>
+                    <option value="256">256 kbps</option>
+                    <option value="320" selected>320 kbps</option>
+                </select>
+            </div>
+            <div class="setting-row">
+                <div>
+                    <span class="setting-label">Embed thumbnail</span>
+                    <div class="setting-hint">Adds cover art to the audio file</div>
+                </div>
+                <div class="toggle on" id="set-thumb" onclick="this.classList.toggle('on')"></div>
+            </div>
+        </div>
+
+        <div class="setting-group">
+            <div class="setting-group-title">Subtitles</div>
+            <div class="setting-row">
+                <span class="setting-label">Download subtitles</span>
+                <div class="toggle" id="set-subs" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="setting-row">
+                <span class="setting-label">Language code</span>
+                <input class="setting-input setting-input-sm" id="set-sub-lang" value="en" maxlength="20">
+            </div>
+        </div>
+
+        <div class="setting-group">
+            <div class="setting-group-title">Network & Proxy</div>
+            <div class="setting-row">
+                <div>
+                    <span class="setting-label">Proxy mode</span>
+                    <div class="setting-hint">Auto fetches & tests free proxies until one works</div>
+                </div>
+                <select id="set-proxy-mode">
+                    <option value="none">Disabled</option>
+                    <option value="auto">Auto (Free Proxy)</option>
+                    <option value="manual">Manual</option>
+                </select>
+            </div>
+            <div class="setting-row hidden" id="set-proxy-manual-row">
+                <div>
+                    <span class="setting-label">Proxy URL</span>
+                    <div class="setting-hint">http://, socks5://, etc.</div>
+                </div>
+                <input class="setting-input" id="set-proxy" placeholder="http://user:pass@ip:port" style="width:220px">
+            </div>
+            <div class="setting-row">
+                <div>
+                    <span class="setting-label">Speed limit</span>
+                    <div class="setting-hint">Cap download bandwidth</div>
+                </div>
+                <select id="set-speed">
+                    <option value="0">No limit</option>
+                    <option value="1M">1 MB/s</option>
+                    <option value="5M">5 MB/s</option>
+                    <option value="10M">10 MB/s</option>
+                    <option value="50M">50 MB/s</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="setting-group">
+            <div class="setting-group-title">Limits</div>
+            <div class="setting-row">
+                <div>
+                    <span class="setting-label">Max file size</span>
+                    <div class="setting-hint">Skip files larger than this</div>
+                </div>
+                <select id="set-maxsize">
+                    <option value="0">No limit</option>
+                    <option value="100M">100 MB</option>
+                    <option value="500M">500 MB</option>
+                    <option value="1G">1 GB</option>
+                    <option value="5G">5 GB</option>
+                    <option value="10G">10 GB</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="setting-group">
+            <div class="setting-group-title">Enhancements</div>
+            <div class="setting-row">
+                <div>
+                    <span class="setting-label">SponsorBlock</span>
+                    <div class="setting-hint">Mark sponsor segments as chapters</div>
+                </div>
+                <div class="toggle" id="set-sponsor" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="setting-row">
+                <div>
+                    <span class="setting-label">Embed metadata</span>
+                    <div class="setting-hint">Add title, artist, etc. to file</div>
+                </div>
+                <div class="toggle on" id="set-meta" onclick="this.classList.toggle('on')"></div>
+            </div>
+        </div>
+
+        <div class="setting-group">
+            <div class="setting-group-title">Output</div>
+            <div class="setting-row" style="flex-direction:column;align-items:stretch;gap:6px;">
+                <div>
+                    <span class="setting-label">Filename template</span>
+                    <div class="setting-hint">Available: %(title)s, %(id)s, %(ext)s, %(uploader)s, %(upload_date)s</div>
+                </div>
+                <input class="setting-input setting-input-mono" id="set-template"
+                       value="%(title).80s [%(id)s].%(ext)s">
+            </div>
+        </div>
+
+        <div class="setting-group">
+            <div class="setting-group-title">Advanced</div>
+            <div class="setting-row" style="flex-direction:column;align-items:stretch;gap:6px;">
+                <div>
+                    <span class="setting-label">Custom yt-dlp arguments</span>
+                    <div class="setting-hint">Extra CLI flags. These override other settings.</div>
+                </div>
+                <textarea class="setting-input setting-input-mono" id="set-custom"
+                          placeholder="--no-check-certificates&#10;--buffer-size 16K" rows="3"></textarea>
+            </div>
+        </div>
+
+        <div class="settings-actions">
+            <button class="btn-primary" onclick="saveSettings()">Save Settings</button>
+            <button class="btn-ghost" onclick="resetSettings()">Reset Defaults</button>
+        </div>
+    </section>
+</div>
+
+<script>
+/* Defaults */
+const DEFAULTS = {
+    format: 'video',
+    audio_format: 'mp3',
+    audio_bitrate: '320',
+    video_quality: 'best',
+    embed_thumbnail: true,
+    embed_metadata: true,
+    subtitles: false,
+    subtitle_lang: 'en',
+    speed_limit: '0',
+    proxy_mode: 'none',
+    proxy: '',
+    max_filesize: '0',
+    sponsorblock: false,
+    filename_template: '%(title).80s [%(id)s].%(ext)s',
+    custom_args: '',
+};
+
+const state = { s: { taskId: null }, p: { taskId: null } };
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadSettings();
+    initTabs();
+    initFmtMini('s');
+    initFmtMini('p');
+    
+    // Handle proxy mode visibility
+    document.getElementById('set-proxy-mode').addEventListener('change', e => {
+        document.getElementById('set-proxy-manual-row').classList.toggle('hidden', e.target.value !== 'manual');
+    });
+
+    lucide.createIcons();
+    requestAnimationFrame(() => {
+        moveTabIndicator();
+        moveMiniInd('s');
+        moveMiniInd('p');
+    });
+});
+window.addEventListener('resize', () => {
+    moveTabIndicator();
+    moveMiniInd('s');
+    moveMiniInd('p');
+});
+
+/*SETTINGS*/
+function getSettings() {
+    try {
+        const raw = localStorage.getItem('ytdlp-settings');
+        return raw ? { ...DEFAULTS, ...JSON.parse(raw) } : { ...DEFAULTS };
+    } catch { return { ...DEFAULTS }; }
+}
+
+function loadSettings() {
+    const s = getSettings();
+    document.getElementById('set-format').value = s.format;
+    document.getElementById('set-quality').value = s.video_quality;
+    document.getElementById('set-audio-fmt').value = s.audio_format;
+    document.getElementById('set-bitrate').value = s.audio_bitrate;
+    document.getElementById('set-template').value = s.filename_template;
+    document.getElementById('set-proxy').value = s.proxy;
+    document.getElementById('set-proxy-mode').value = s.proxy_mode;
+    document.getElementById('set-sub-lang').value = s.subtitle_lang;
+    document.getElementById('set-custom').value = s.custom_args;
+    document.getElementById('set-speed').value = s.speed_limit;
+    document.getElementById('set-maxsize').value = s.max_filesize;
+
+    document.getElementById('set-proxy-manual-row').classList.toggle('hidden', s.proxy_mode !== 'manual');
+
+    toggleEl('set-thumb', s.embed_thumbnail);
+    toggleEl('set-subs', s.subtitles);
+    toggleEl('set-sponsor', s.sponsorblock);
+    toggleEl('set-meta', s.embed_metadata);
+
+    syncSettingsVis(s.format);
+    applyFmtDefaults('s', s);
+    applyFmtDefaults('p', s);
+}
+
+function saveSettings() {
+    const fmt = document.getElementById('set-format').value;
+    const obj = {
+        format: fmt,
+        video_quality: document.getElementById('set-quality').value,
+        audio_format: document.getElementById('set-audio-fmt').value,
+        audio_bitrate: document.getElementById('set-bitrate').value,
+        embed_thumbnail: document.getElementById('set-thumb').classList.contains('on'),
+        embed_metadata: document.getElementById('set-meta').classList.contains('on'),
+        subtitles: document.getElementById('set-subs').classList.contains('on'),
+        subtitle_lang: document.getElementById('set-sub-lang').value.trim() || 'en',
+        speed_limit: document.getElementById('set-speed').value,
+        proxy_mode: document.getElementById('set-proxy-mode').value,
+        proxy: document.getElementById('set-proxy').value.trim(),
+        max_filesize: document.getElementById('set-maxsize').value,
+        sponsorblock: document.getElementById('set-sponsor').classList.contains('on'),
+        filename_template: document.getElementById('set-template').value.trim() || DEFAULTS.filename_template,
+        custom_args: document.getElementById('set-custom').value,
+    };
+    localStorage.setItem('ytdlp-settings', JSON.stringify(obj));
+    syncSettingsVis(fmt);
+    applyFmtDefaults('s', obj);
+    applyFmtDefaults('p', obj);
+    toast('Settings saved', 'success');
+}
+
+function resetSettings() {
+    localStorage.removeItem('ytdlp-settings');
+    loadSettings();
+    toast('Settings reset to defaults', 'success');
+}
+
+function syncSettingsVis(fmt) {
+    document.getElementById('set-video-opts').classList.toggle('hidden', fmt !== 'video');
+    document.getElementById('set-audio-opts').classList.toggle('hidden', fmt !== 'audio');
+    document.getElementById('set-audio-advanced').classList.toggle('hidden', fmt !== 'audio');
+}
+
+document.getElementById('set-format').addEventListener('change', e => syncSettingsVis(e.target.value));
+
+function applyFmtDefaults(prefix, s) {
+    setFmt(prefix, s.format);
+    document.getElementById(`${prefix}-quality`).value = s.video_quality;
+    document.getElementById(`${prefix}-audio-fmt`).value = s.audio_format;
+}
+
+function toggleEl(id, val) {
+    const el = document.getElementById(id);
+    val ? el.classList.add('on') : el.classList.remove('on');
+}
+
+/*TABS*/
+function initTabs() {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+}
+
+function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+    document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === `panel-${tab}`));
+    moveTabIndicator();
+}
+
+function moveTabIndicator() {
+    const btn = document.querySelector('.tab-btn.active');
+    const ind = document.getElementById('tab-indicator');
+    if (!btn || !ind) return;
+    ind.style.left = btn.offsetLeft + 'px';
+    ind.style.width = btn.offsetWidth + 'px';
+}
+
+/*FORMAT MINI TOGGLES*/
+function initFmtMini(prefix) {
+    document.querySelectorAll(`#${prefix}-fmt-bar .fmt-mini-btn`).forEach(btn => {
+        btn.addEventListener('click', () => setFmt(prefix, btn.dataset.format));
+    });
+}
+
+function setFmt(prefix, fmt) {
+    document.querySelectorAll(`#${prefix}-fmt-bar .fmt-mini-btn`).forEach(b =>
+        b.classList.toggle('active', b.dataset.format === fmt)
+    );
+    document.getElementById(`${prefix}-video-opts`).classList.toggle('hidden', fmt !== 'video');
+    document.getElementById(`${prefix}-audio-opts`).classList.toggle('hidden', fmt !== 'audio');
+    moveMiniInd(prefix);
+}
+
+function moveMiniInd(prefix) {
+    const btn = document.querySelector(`#${prefix}-fmt-bar .fmt-mini-btn.active`);
+    const ind = document.getElementById(`${prefix}-fmt-ind`);
+    if (!btn || !ind) return;
+    ind.style.left = btn.offsetLeft + 'px';
+    ind.style.width = btn.offsetWidth + 'px';
+}
+
+function getFmt(prefix) {
+    const btn = document.querySelector(`#${prefix}-fmt-bar .fmt-mini-btn.active`);
+    return btn ? btn.dataset.format : 'video';
+}
+
+/*API HELPERS*/
+async function apiInfo(url) {
+    const r = await fetch('/api/info', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+    });
+    return r.json();
+}
+
+function buildPayload(url, prefix) {
+    const s = getSettings();
+    s.format = getFmt(prefix);
+    if (s.format === 'video') {
+        s.video_quality = document.getElementById(`${prefix}-quality`).value;
+    } else {
+        s.audio_format = document.getElementById(`${prefix}-audio-fmt`).value;
+    }
+    return { url, ...s };
+}
+
+async function apiDownload(url, prefix) {
+    const endpoint = prefix === 's' ? '/api/download' : '/api/download/playlist';
+    const r = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(buildPayload(url, prefix)),
+    });
+    return r.json();
+}
+
+/*SINGLE FILE*/
+async function fetchSingleInfo() {
+    const url = document.getElementById('s-url').value.trim();
+    if (!url) return toast('Please enter a URL', 'error');
+    const btn = document.getElementById('s-fetch-btn');
+    btn.disabled = true; btn.textContent = 'Loading…';
+    try {
+        const data = await apiInfo(url);
+        if (data.error) throw new Error(data.error);
+        if (data.is_playlist) return toast('This is a playlist — use the Playlist tab.', 'warning');
+        document.getElementById('s-thumb').src = data.thumbnail || '';
+        document.getElementById('s-title').textContent = data.title;
+        document.getElementById('s-uploader').textContent = data.uploader || '';
+        document.getElementById('s-duration').textContent = fmtDur(data.duration);
+        show('s-info'); hide('s-progress'); hide('s-complete');
+    } catch (e) { toast(e.message, 'error'); }
+    finally { btn.disabled = false; btn.textContent = 'Get Info'; }
+}
+
+async function startSingleDownload() {
+    const url = document.getElementById('s-url').value.trim();
+    if (!url) return toast('Please enter a URL', 'error');
+    const btn = document.getElementById('s-dl-btn');
+    btn.disabled = true; btn.textContent = 'Starting…';
+    hide('s-complete');
+    try {
+        const data = await apiDownload(url, 's');
+        if (data.error) throw new Error(data.error);
+        state.s.taskId = data.task_id;
+        show('s-progress');
+        trackProgress(data.task_id, 's');
+    } catch (e) {
+        toast(e.message, 'error');
+        btn.disabled = false; btn.textContent = 'Download';
+    }
+}
+
+/*PLAYLIST*/
+async function fetchPlaylistInfo() {
+    const url = document.getElementById('p-url').value.trim();
+    if (!url) return toast('Please enter a URL', 'error');
+    const btn = document.getElementById('p-fetch-btn');
+    btn.disabled = true; btn.textContent = 'Loading…';
+    try {
+        const data = await apiInfo(url);
+        if (data.error) throw new Error(data.error);
+        if (!data.is_playlist) return toast('This is a single video — use the Single File tab.', 'warning');
+        document.getElementById('p-title').textContent = data.title;
+        document.getElementById('p-uploader').textContent = data.uploader || '';
+        document.getElementById('p-count').textContent = data.count + ' videos';
+        show('p-info');
+        const box = document.getElementById('p-entries');
+        box.innerHTML = data.entries.map(e =>
+            `<div class="pl-item"><span class="pl-item-title">${esc(e.title)}</span><span class="pl-item-dur">${fmtDur(e.duration)}</span></div>`
+        ).join('');
+        if (data.count > 80) box.innerHTML += `<div class="pl-item" style="justify-content:center;color:var(--text-muted)">…and ${data.count - 80} more</div>`;
+        show('p-entries'); hide('p-progress'); hide('p-complete');
+    } catch (e) { toast(e.message, 'error'); }
+    finally { btn.disabled = false; btn.textContent = 'Get Info'; }
+}
+
+async function startPlaylistDownload() {
+    const url = document.getElementById('p-url').value.trim();
+    if (!url) return toast('Please enter a URL', 'error');
+    const btn = document.getElementById('p-dl-btn');
+    btn.disabled = true; btn.textContent = 'Starting…';
+    hide('p-complete');
+    try {
+        const data = await apiDownload(url, 'p');
+        if (data.error) throw new Error(data.error);
+        state.p.taskId = data.task_id;
+        show('p-progress');
+        trackProgress(data.task_id, 'p');
+    } catch (e) {
+        toast(e.message, 'error');
+        btn.disabled = false; btn.textContent = 'Download All as ZIP';
+    }
+}
+
+/*PROGRESS (SSE)*/
+function trackProgress(tid, prefix) {
+    const es = new EventSource(`/api/progress/${tid}`);
+    const fill = document.getElementById(`${prefix}-fill`);
+    const pct = document.getElementById(`${prefix}-pct`);
+    const spd = document.getElementById(`${prefix}-speed`);
+    const file = document.getElementById(`${prefix}-file`);
+    const dlBtn = document.getElementById(`${prefix}-dl-btn`);
+    const isPlaylist = prefix === 'p';
+
+    es.onmessage = (ev) => {
+        const d = JSON.parse(ev.data);
+        
+        // Reset indeterminate state
+        fill.classList.remove('indeterminate');
+
+        if (d.status === 'finding_proxy') {
+            fill.classList.add('indeterminate');
+            pct.textContent = 'Finding proxy…';
+            spd.textContent = '';
+            file.textContent = 'Testing free proxies, please wait...';
+        } else if (d.status === 'extracting') {
+            pct.textContent = 'Extracting info…'; spd.textContent = ''; file.textContent = '';
+        } else if (d.status === 'downloading') {
+            const p = Math.round(d.progress);
+            fill.style.width = p + '%';
+            pct.textContent = d.total_files > 1
+                ? `${d.completed_files}/${d.total_files} — ${p}%`
+                : `${p}%`;
+            spd.textContent = fmtSpd(d.speed);
+            file.textContent = d.current_file || '';
+        } else if (d.status === 'processing') {
+            pct.textContent = 'Processing…'; file.textContent = d.current_file || '';
+        } else if (d.status === 'zipping') {
+            fill.style.width = '100%'; pct.textContent = 'Creating ZIP…';
+            spd.textContent = ''; file.textContent = '';
+        } else if (d.status === 'completed') {
+            es.close();
+            fill.classList.remove('indeterminate');
+            fill.style.width = '100%'; pct.textContent = '100%'; spd.textContent = ''; file.textContent = '';
+            show(`${prefix}-complete`);
+            dlBtn.disabled = false;
+            dlBtn.textContent = isPlaylist ? 'Download All as ZIP' : 'Download';
+            toast('Download complete!', 'success');
+        } else if (d.status === 'error') {
+            es.close();
+            fill.classList.remove('indeterminate');
+            toast(d.error || 'Download failed', 'error');
+            dlBtn.disabled = false;
+            dlBtn.textContent = isPlaylist ? 'Download All as ZIP' : 'Download';
+        }
+    };
+    es.onerror = () => {
+        es.close(); toast('Connection lost', 'error');
+        fill.classList.remove('indeterminate');
+        dlBtn.disabled = false;
+        dlBtn.textContent = isPlaylist ? 'Download All as ZIP' : 'Download';
+    };
+}
+
+/*FILE SAVE*/
+function saveFile(prefix) {
+    const tid = state[prefix].taskId;
+    if (tid) window.location.href = `/api/file/${tid}`;
+}
+
+/*TOAST*/
+function toast(msg, type = 'info') {
+    const c = document.getElementById('toasts');
+    const el = document.createElement('div');
+    el.className = `toast toast-${type}`;
+    el.textContent = msg;
+    c.appendChild(el);
+    requestAnimationFrame(() => el.classList.add('show'));
+    setTimeout(() => {
+        el.classList.remove('show');
+        setTimeout(() => el.remove(), 300);
+    }, 3500);
+}
+
+/*UTILITIES*/
+function show(id) { document.getElementById(id).classList.remove('hidden'); }
+function hide(id) { document.getElementById(id).classList.add('hidden'); }
+function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+function fmtDur(sec) {
+    if (!sec) return '--:--';
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const s = Math.floor(sec % 60);
+    return h > 0
+        ? `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+        : `${m}:${String(s).padStart(2,'0')}`;
+}
+
+function fmtSpd(bps) {
+    if (!bps) return '';
+    if (bps > 1048576) return (bps / 1048576).toFixed(1) + ' MB/s';
+    if (bps > 1024) return (bps / 1024).toFixed(0) + ' KB/s';
+    return Math.round(bps) + ' B/s';
+}
+</script>
+</body>
+</html>
