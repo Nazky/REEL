@@ -26,7 +26,8 @@ Docker is the easiest way to run REEL because it automatically installs Python, 
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/Nazky/reel.gitcd reel
+git clone https://github.com/Nazky/reel.git
+cd reel
 ```
 
 2. Build and run the container: 
